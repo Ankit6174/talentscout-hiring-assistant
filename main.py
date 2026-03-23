@@ -2,6 +2,9 @@ import streamlit as st
 from htbuilder.units import rem # Most abstract library to work with html
 from htbuilder import div, styles
 import uuid
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from langchain_core.messages import HumanMessage
 
@@ -55,6 +58,10 @@ def has_message_history():
 def get_tread_id():
     return uuid.uuid4()
 
+# Insert threadID in the session state if not present.
+if 'thread_id' not in st.session_state:
+    st.session_state.thread_id = get_tread_id()
+
 # Get response from our workflow
 def get_response(user_input):
     # Display user's input
@@ -77,7 +84,15 @@ def get_response(user_input):
             st.session_state.message_history.append({"role": "user", "content": user_input})
             st.session_state.message_history.append({"role": "assistant", "content": full_response})
 
-CONFIG = {"configurable": {"thread_id": get_tread_id()}}
+CONFIG = {
+    "configurable": {
+        "thread_id": st.session_state.thread_id
+    },
+    "run_name": "Inital Flow",
+    "metadata": {
+        "thread_id": st.session_state.thread_id
+    }
+}
 
 # Display a simple gemini style logo
 st.html(div(style=styles(font_size=rem(5), line_height=1))["✦"])

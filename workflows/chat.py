@@ -9,6 +9,7 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import InMemorySaver
 
 from typing import TypedDict, Annotated
+
 load_dotenv()
 
 MODEL = "gpt-5-nano"
