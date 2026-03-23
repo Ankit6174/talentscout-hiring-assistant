@@ -11,7 +11,9 @@ from langgraph.checkpoint.memory import InMemorySaver
 from typing import TypedDict, Annotated
 load_dotenv()
 
-model = ChatOpenAI(model='gpt-5-nano')
+MODEL = "gpt-5-nano"
+
+model = ChatOpenAI(model=MODEL)
 
 template = """
 You are a professional and helpful Hiring Assistant chatbot for TalentScout. Your goal is to conduct an initial screening of candidates through a structured, conversational chat.
