@@ -1,0 +1,15 @@
+[theme]
+base="light"
+backgroundColor="#f5f7fb"
+secondaryBackgroundColor="#ffffff"
+textColor="#2a2a2a"
+
+# Base text
+font="Inter"
+baseFontWeight=400
+baseFontSize=14
+
+# Heading text
+headingFont="Inter"
+headingFontWeights=[600,600,600,200,600,200]
+headingFontSizes=["3rem","1.5rem","1rem","1rem","0.8rem","0.8rem"]
