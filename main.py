@@ -2,8 +2,11 @@ import streamlit as st
 from htbuilder.units import rem # Most abstract library to work with html
 from htbuilder import div, styles
 import uuid
+from dotenv import load_dotenv
 
-from langchain_core.messages import HumanMessage
+load_dotenv()
+
+from langchain_core.messages import HumanMessage, AIMessage
 
 # Import files
 from workflows.chat import workflow
@@ -55,15 +58,19 @@ def has_message_history():
 def get_tread_id():
     return uuid.uuid4()
 
-# Get response from our workflow
+# Insert threadID in the session state if not present.
+if 'thread_id' not in st.session_state:
+    st.session_state.thread_id = get_tread_id()
+
 def get_response(user_input):
-    # Display user's input
+    # Show user message
     with st.chat_message("user"):
         st.text(user_input)
     
-    # Display assistant's input
+    # Show assistant response
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
+
             response_gen = workflow.stream(
                 {
                     "messages": [HumanMessage(content=user_input)]
@@ -72,12 +79,35 @@ def get_response(user_input):
                 stream_mode="messages"
             )
 
-            full_response = st.write_stream(chunk[0].content for chunk in response_gen)
+            def filtered_stream():
+                for chunk in response_gen:
+                    message = chunk[0]
 
-            st.session_state.message_history.append({"role": "user", "content": user_input})
-            st.session_state.message_history.append({"role": "assistant", "content": full_response})
+                    #Only stream if AI messages, ignore tool messages
+                    if isinstance(message, AIMessage) and message.content:
+                        yield message.content
 
-CONFIG = {"configurable": {"thread_id": get_tread_id()}}
+            full_response = st.write_stream(filtered_stream())
+
+            # Save chat history
+            st.session_state.message_history.append({
+                "role": "user",
+                "content": user_input
+            })
+            st.session_state.message_history.append({
+                "role": "assistant",
+                "content": full_response
+            })
+
+CONFIG = {
+    "configurable": {
+        "thread_id": st.session_state.thread_id
+    },
+    "run_name": "Inital Flow",
+    "metadata": {
+        "thread_id": st.session_state.thread_id
+    }
+}
 
 # Display a simple gemini style logo
 st.html(div(style=styles(font_size=rem(5), line_height=1))["✦"])
