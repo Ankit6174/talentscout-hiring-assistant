@@ -7,15 +7,21 @@ from langchain_core.prompts import PromptTemplate
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.prebuilt import ToolNode, tools_condition
 
 from typing import TypedDict, Annotated
+from tools.main import insert_condidate_info
 
 load_dotenv()
 
 MODEL = "gpt-5-nano"
 
-model = ChatOpenAI(model=MODEL)
+tools = [insert_condidate_info]
 
+model = ChatOpenAI(model=MODEL)
+model_with_tools = model.bind_tools(tools)
+
+# Template for prompt. Note that in point 2, I've instructed the LLM not to mention the tools.
 template = """
 You are a professional and helpful Hiring Assistant chatbot for TalentScout. Your goal is to conduct an initial screening of candidates through a structured, conversational chat.
 
@@ -57,7 +63,7 @@ class ChatState(TypedDict):
 def chat_node(state: ChatState):
     messages = state['messages']
 
-    chain = prompt | model
+    chain = prompt | model_with_tools
 
     response = chain.invoke({
         "messages": messages
@@ -65,11 +71,16 @@ def chat_node(state: ChatState):
 
     return {"messages": [response]}
 
+toolNode = ToolNode(tools)
+
 graph = StateGraph(ChatState)
 
 graph.add_node('chat_node', chat_node)
-graph.add_edge(START, 'chat_node')
-graph.add_edge('chat_node', END)
+graph.add_node("tools", toolNode)
+
+graph.add_edge(START, "chat_node")
+graph.add_conditional_edges("chat_node", tools_condition)
+graph.add_edge("tools", "chat_node")
 
 checkpointer = InMemorySaver()
 workflow = graph.compile(checkpointer=checkpointer)
