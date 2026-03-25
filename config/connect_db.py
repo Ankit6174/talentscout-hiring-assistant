@@ -8,7 +8,6 @@ load_dotenv()
 def get_client():
     try:
         client = MongoClient(os.environ["MONGO_CONNECTION_STRING"])
-        client.admin.command("ping")
 
         print("Connected to cloud database.")
     except Exception as e:

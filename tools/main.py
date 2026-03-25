@@ -1,3 +1,4 @@
+import os
 from langchain.tools import tool
 from pydantic import BaseModel, Field, ValidationError
 from typing import List
@@ -40,8 +41,8 @@ def insert_condidate_info(
     }
 
     collection = get_collection(
-        collection_name="ecommerce", 
-        database_name="myDatabase"
+        database_name=os.environ["MONGO_DB_NAME"], 
+        collection_name=os.environ["MONGO_COLLECTION_NAME"]
     )
 
     try:
