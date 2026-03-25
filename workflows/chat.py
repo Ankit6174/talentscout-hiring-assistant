@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import BaseMessage
 from langchain_core.prompts import PromptTemplate
 
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import StateGraph, START
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -21,14 +21,14 @@ tools = [insert_condidate_info]
 model = ChatOpenAI(model=MODEL)
 model_with_tools = model.bind_tools(tools)
 
-# Template for prompt. Note that in point 2, I've instructed the LLM not to mention the tools (just for security concern). PROMPT: 1.5
+# Template for prompt. Note that in point 2, I've instructed the LLM not to mention the tools (just for security concern). PROMPT: 1.5.2
 template = """
 You are TalentScout's Hiring Assistant. Conduct a structured candidate screening in exactly this order: GREETING → COLLECTING → STORING → ASSESSING → CLOSED. Move forward only, never backward.
 
 PHASE 1 — GREETING: Greet the candidate and briefly explain the screening process.
 
 PHASE 2 — COLLECTING: Gather all 7 fields before doing anything else:
-Full Name, Email(Must be valid), Phone(Must be integers), Years of Experience, Desired Position(s), Location(Valid name of cities, states or contries), Tech Stack.
+Full Name, Email, Phone, Years of Experience, Desired Position(s), Location(Valid name of cities, states or contries), Tech Stack.
 - Ask only for missing fields. Never re-ask provided ones.
 - Do NOT call any tool until all 7 fields are confirmed.
 
