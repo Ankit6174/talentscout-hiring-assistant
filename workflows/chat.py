@@ -21,7 +21,7 @@ tools = [insert_condidate_info]
 model = ChatOpenAI(model=MODEL)
 model_with_tools = model.bind_tools(tools)
 
-# Template for prompt. Note that in point 2, I've instructed the LLM not to mention the tools (just for security concern). PROMPT: 1.5.2
+# Template for PROMPT: 1.5.2
 template = """
 You are TalentScout's Hiring Assistant. Conduct a structured candidate screening in exactly this order: GREETING → COLLECTING → STORING → ASSESSING → CLOSED. Move forward only, never backward.
 
@@ -56,10 +56,14 @@ Conversation History:
 prompt = PromptTemplate(template=template, input_variables=["messages"])
 
 class ChatState(TypedDict):
-    info_collected: bool
+    """Represents the state of the conversation graph."""
     messages: Annotated[list[BaseMessage], add_messages]
 
-def chat_node(state: ChatState):
+def chat_node(state: ChatState):    
+    """
+    Processes the current conversation state through the LLM.
+    Invokes the model with the prompt template and available tools.
+    """
     messages = state['messages']
 
     chain = prompt | model_with_tools
@@ -70,16 +74,21 @@ def chat_node(state: ChatState):
 
     return {"messages": [response]}
 
+# Initialize the tool execution node
 toolNode = ToolNode(tools)
 
+# Initialize the state graph
 graph = StateGraph(ChatState)
 
+# Add execution nodes to the graph
 graph.add_node('chat_node', chat_node)
 graph.add_node("tools", toolNode)
 
+# Define the flow of the graph with edges and conditional routing
 graph.add_edge(START, "chat_node")
 graph.add_conditional_edges("chat_node", tools_condition)
 graph.add_edge("tools", "chat_node")
 
+# Compile the workflow with an in-memory checkpointer for session state
 checkpointer = InMemorySaver()
 workflow = graph.compile(checkpointer=checkpointer)
