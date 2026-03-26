@@ -116,8 +116,15 @@ st.html(div(style=styles(font_size=rem(5), line_height=1))["✦"])
 st.title("Hiring Assistant Chatbot")
 st.caption("TalentScout")
 
+# Check if a suggestion was clicked or text was typed in the previous run
+pill_key = f"selected_suggestion_{st.session_state.pills_key_counter}"
+current_suggestion = st.session_state.get(pill_key)
+
+if current_suggestion or st.session_state.get("user_input"):
+    st.session_state.show_suggestions = False
+
 # Show suggestions only if no interaction yet
-if st.session_state.show_suggestions or (not has_message_history):
+if st.session_state.show_suggestions and not has_message_history():
     st.write("""
     Hello! Welcome to **TalentScout's Hiring Assistant**.
 
@@ -125,18 +132,18 @@ if st.session_state.show_suggestions or (not has_message_history):
     Based on your skills and experience, I'll ask questions tailored to your tech stack to better understand your expertise.
     """)
 
-    suggestion = st.pills(
+    st.pills(
         label="Suggestions",
         label_visibility="collapsed",
         options=SUGGESTIONS.keys(),
         selection_mode="single",
-        key=f"selected_suggestion_{st.session_state.pills_key_counter}"
+        key=pill_key
     )
 
-    if suggestion:
-        st.session_state.show_suggestions = False  # Hide pills
-        get_response(SUGGESTIONS[suggestion])       # Use the full prompt value
-        st.rerun()
+if current_suggestion:
+    st.session_state.pills_key_counter += 1  # Reset pills key for future
+    get_response(SUGGESTIONS[current_suggestion])
+    st.rerun()
 
 # List all messages in current session
 for messages in st.session_state.message_history:
@@ -144,7 +151,7 @@ for messages in st.session_state.message_history:
         st.text(messages["content"])
 
 # Take user input
-user_input_from_text = st.chat_input("Enter here...")
+user_input_from_text = st.chat_input("Enter here...", key="user_input")
 
 if user_input_from_text:
     get_response(user_input_from_text)
