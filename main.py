@@ -37,7 +37,7 @@ if 'pills_key_counter' not in st.session_state:
 # Store suggestions in key–value pairs, where keys are shown to users and values are passed to the LLM.
 SUGGESTIONS = {
     ":blue[:material/work:] Start job application": (
-        "I want to apply for a job. Please guide me through the application process."
+        "Hii, I want to apply for a job."
     ),
     ":green[:material/info:] How it works": (
         "Explain how the TalentScout hiring assistant works and what steps are involved."
@@ -51,11 +51,13 @@ SUGGESTIONS = {
 }
 
 # Check if it's user's first interection or not
-def has_message_history():
+def has_message_history() -> bool:
+    """Return a True if user has history else False."""
     return "message_history" in st.session_state and len(st.session_state.message_history) > 0
 
 # Generate unique treadID to every new user
 def get_tread_id():
+    """Generate new thread_id for every new user."""
     return uuid.uuid4()
 
 # Insert threadID in the session state if not present.
@@ -63,13 +65,20 @@ if 'thread_id' not in st.session_state:
     st.session_state.thread_id = get_tread_id()
 
 def get_response(user_input):
+    """
+    Parameter:
+    user_input: String (In HumanMessage Wapper)
+
+    Yeild output produced during workflow execution.
+    Return:
+    """
     # Show user message
     with st.chat_message("user"):
         st.text(user_input)
     
     # Show assistant response
     with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
+        with st.spinner("Thinking..."): # Add spinner animation
 
             response_gen = workflow.stream(
                 {
@@ -80,10 +89,14 @@ def get_response(user_input):
             )
 
             def filtered_stream():
+                """
+                We are using tools internally and because we have
+                passed stream_mode=messages we need to filter AIMessage from it.
+                """
                 for chunk in response_gen:
                     message = chunk[0]
 
-                    #Only stream if AI messages, ignore tool messages
+                    # Only stream if AI messages, ignore tool messages
                     if isinstance(message, AIMessage) and message.content:
                         yield message.content
 
@@ -103,14 +116,14 @@ CONFIG = {
     "configurable": {
         "thread_id": st.session_state.thread_id
     },
-    "run_name": "Inital Flow",
+    "run_name": f"Candidate: {st.session_state.thread_id}",
     "metadata": {
         "thread_id": st.session_state.thread_id
     }
 }
 
 # Display a simple gemini style logo
-st.html(div(style=styles(font_size=rem(5), line_height=1))["✦"])
+st.html(div(style=styles(font_size=rem(5), line_height=1))["✦"]) 
 
 # Main heading or hero heading of our app
 st.title("Hiring Assistant Chatbot")
