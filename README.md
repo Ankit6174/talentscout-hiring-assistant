@@ -4,7 +4,7 @@ The TalentScout Hiring Assistant Chatbot is a conversational app that uses AI to
 
 The chatbot interacts with candidates, gathers important information, and creates customized technical questions based on their tech stack. It uses AI Models (gpt-5-nano) to make sure conversations are intelligent, context aware, and responsive.
 
-[Read docs](https://docs.google.com/document/d/e/2PACX-1vSP4tbsAIbF4pqt1gKeS2adWFtyzw-ceGEwOuxc4h_RhInFWLOZ2F6wHYKMiMf7FmUif2sDbcWxAqUW/pub) for more information.
+[Read docs](https://docs.google.com/document/d/1R0lUC3i84SVuYdN028IyNj8T0YszdMElbZyErEhUER0/edit?usp=drivesdk)for more information.
 
 ![alt text](image.png)
 
